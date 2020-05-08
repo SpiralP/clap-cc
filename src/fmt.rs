@@ -1,32 +1,38 @@
 use std::fmt;
 
 struct ANSIString {
-    color_code: &'static str,
+    color_code: Option<&'static str>,
     s: String,
 }
 impl ANSIString {
     pub fn new<S: Into<String>>(color_code: &'static str, s: S) -> Self {
         Self {
-            color_code,
+            color_code: Some(color_code),
             s: s.into(),
         }
     }
 
-    // white normal message
+    // don't set any colors
     pub fn from<S: Into<String>>(s: S) -> Self {
-        //
-        Self::new(classicube_helpers::color::WHITE, s)
+        Self {
+            color_code: None,
+            s: s.into(),
+        }
     }
 }
 impl fmt::Display for ANSIString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}{}",
-            &self.color_code,
-            &self.s,
-            classicube_helpers::color::WHITE
-        )
+        if let Some(color_code) = self.color_code {
+            write!(
+                f,
+                "{}{}{}",
+                color_code,
+                &self.s,
+                classicube_helpers::color::WHITE
+            )
+        } else {
+            write!(f, "{}", &self.s,)
+        }
     }
 }
 
