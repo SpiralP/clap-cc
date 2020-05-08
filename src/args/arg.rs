@@ -6,7 +6,6 @@ use std::ffi::{OsStr, OsString};
 use osstringext::OsStrExt3;
 #[cfg(not(any(target_os = "windows", target_arch = "wasm32")))]
 use std::os::unix::ffi::OsStrExt;
-use std::env;
 
 #[cfg(feature = "yaml")]
 use yaml_rust::Yaml;
@@ -3587,19 +3586,19 @@ impl<'a, 'b> Arg<'a, 'b> {
     /// [`Arg::takes_value(true)`]: ./struct.Arg.html#method.takes_value
     /// [`Arg::multiple(true)`]: ./struct.Arg.html#method.multiple
     /// [`Arg::use_delimiter(true)`]: ./struct.Arg.html#method.use_delimiter
-    pub fn env(self, name: &'a str) -> Self {
-        self.env_os(OsStr::new(name))
-    }
+    // pub fn env(self, name: &'a str) -> Self {
+    //     self.env_os(OsStr::new(name))
+    // }
 
     /// Specifies that if the value is not passed in as an argument, that it should be retrieved
     /// from the environment if available in the exact same manner as [`Arg::env`] only using
     /// [`OsStr`]s instead.
-    pub fn env_os(mut self, name: &'a OsStr) -> Self {
-        self.setb(ArgSettings::TakesValue);
+    // pub fn env_os(mut self, name: &'a OsStr) -> Self {
+    //     self.setb(ArgSettings::TakesValue);
 
-        self.v.env = Some((name, env::var_os(name)));
-        self
-    }
+    //     self.v.env = Some((name, env::var_os(name)));
+    //     self
+    // }
 
     /// @TODO @p2 @docs @release: write docs
     pub fn hide_env_values(self, hide: bool) -> Self {

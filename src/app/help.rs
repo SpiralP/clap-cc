@@ -17,8 +17,6 @@ use map::VecMap;
 use INTERNAL_ERROR_MSG;
 
 // Third Party
-#[cfg(feature = "wrap_help")]
-use term_size;
 use textwrap;
 use unicode_width::UnicodeWidthStr;
 
@@ -123,7 +121,7 @@ impl<'a> Help<'a> {
                     width
                 },
                 None => cmp::min(
-                    term_size::dimensions().map_or(120, |(w, _)| w),
+                    62,
                     match max_w {
                         None | Some(0) => usize::MAX,
                         Some(mw) => mw,

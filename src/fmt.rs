@@ -1,13 +1,31 @@
-#[cfg(all(feature = "color", not(target_os = "windows")))]
-use ansi_term::ANSIString;
-
-#[cfg(all(feature = "color", not(target_os = "windows")))]
-use ansi_term::Colour::{Green, Red, Yellow};
-
-#[cfg(feature = "color")]
-use atty;
 use std::fmt;
-use std::env;
+
+struct ANSIString {
+    s: String,
+}
+impl ANSIString {
+    pub fn from<S: Into<String>>(s: S) -> Self { Self { s: s.into() } }
+}
+impl fmt::Display for ANSIString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", &self.s) }
+}
+
+enum Color {
+    Green,
+    RedBold,
+    Yellow,
+}
+impl Color {
+    pub fn paint(&self, s: &str) -> ANSIString {
+        let color_code = match self {
+            Color::Green => classicube_helpers::color::LIME,
+            Color::RedBold => classicube_helpers::color::RED,
+            Color::Yellow => classicube_helpers::color::YELLOW,
+        };
+
+        ANSIString::from(format!("{}{}", color_code, s))
+    }
+}
 
 #[doc(hidden)]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -16,25 +34,6 @@ pub enum ColorWhen {
     Always,
     Never,
 }
-
-#[cfg(feature = "color")]
-pub fn is_a_tty(stderr: bool) -> bool {
-    debugln!("is_a_tty: stderr={:?}", stderr);
-    let stream = if stderr {
-        atty::Stream::Stderr
-    } else {
-        atty::Stream::Stdout
-    };
-    atty::is(stream)
-}
-
-#[cfg(not(feature = "color"))]
-pub fn is_a_tty(_: bool) -> bool {
-    debugln!("is_a_tty;");
-    false
-}
-
-pub fn is_term_dumb() -> bool { env::var("TERM").ok() == Some(String::from("dumb")) }
 
 #[doc(hidden)]
 pub struct ColorizerOption {
@@ -58,17 +57,7 @@ macro_rules! color {
 }
 
 impl Colorizer {
-    pub fn new(option: ColorizerOption) -> Colorizer {
-        let is_a_tty = is_a_tty(option.use_stderr);
-        let is_term_dumb = is_term_dumb();
-        Colorizer {
-            when: match option.when {
-                ColorWhen::Auto if is_a_tty && !is_term_dumb => ColorWhen::Auto,
-                ColorWhen::Auto => ColorWhen::Never,
-                when => when,
-            }
-        }
-    }
+    pub fn new(option: ColorizerOption) -> Colorizer { Colorizer { when: option.when } }
 
     pub fn good<T>(&self, msg: T) -> Format<T>
     where
@@ -127,19 +116,18 @@ pub enum Format<T> {
     None(T),
 }
 
-#[cfg(all(feature = "color", not(target_os = "windows")))]
 impl<T: AsRef<str>> Format<T> {
     fn format(&self) -> ANSIString {
         match *self {
-            Format::Error(ref e) => Red.bold().paint(e.as_ref()),
-            Format::Warning(ref e) => Yellow.paint(e.as_ref()),
-            Format::Good(ref e) => Green.paint(e.as_ref()),
+            Format::Error(ref e) => Color::RedBold.paint(e.as_ref()),
+            Format::Warning(ref e) => Color::Yellow.paint(e.as_ref()),
+            Format::Good(ref e) => Color::Green.paint(e.as_ref()),
             Format::None(ref e) => ANSIString::from(e.as_ref()),
         }
     }
 }
 
-#[cfg(any(not(feature = "color"), target_os = "windows"))]
+#[cfg(not(feature = "color"))]
 #[cfg_attr(feature = "lints", allow(match_same_arms))]
 impl<T: fmt::Display> Format<T> {
     fn format(&self) -> &T {
@@ -152,34 +140,36 @@ impl<T: fmt::Display> Format<T> {
     }
 }
 
-
-#[cfg(all(feature = "color", not(target_os = "windows")))]
 impl<T: AsRef<str>> fmt::Display for Format<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", &self.format()) }
 }
 
-#[cfg(any(not(feature = "color"), target_os = "windows"))]
+#[cfg(not(feature = "color"))]
 impl<T: fmt::Display> fmt::Display for Format<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", &self.format()) }
 }
 
-#[cfg(all(test, feature = "color", not(target_os = "windows")))]
+#[cfg(all(test, feature = "color"))]
 mod test {
-    use ansi_term::ANSIString;
-    use ansi_term::Colour::{Green, Red, Yellow};
-    use super::Format;
+    use super::*;
 
     #[test]
     fn colored_output() {
         let err = Format::Error("error");
         assert_eq!(
             &*format!("{}", err),
-            &*format!("{}", Red.bold().paint("error"))
+            &*format!("{}", Color::RedBold.paint("error"))
         );
         let good = Format::Good("good");
-        assert_eq!(&*format!("{}", good), &*format!("{}", Green.paint("good")));
+        assert_eq!(
+            &*format!("{}", good),
+            &*format!("{}", Color::Green.paint("good"))
+        );
         let warn = Format::Warning("warn");
-        assert_eq!(&*format!("{}", warn), &*format!("{}", Yellow.paint("warn")));
+        assert_eq!(
+            &*format!("{}", warn),
+            &*format!("{}", Color::Yellow.paint("warn"))
+        );
         let none = Format::None("none");
         assert_eq!(
             &*format!("{}", none),

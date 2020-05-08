@@ -6,7 +6,6 @@ mod validator;
 mod usage;
 
 // Std
-use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fmt;
 use std::io::{self, BufRead, BufWriter, Write};
@@ -1448,7 +1447,7 @@ impl<'a, 'b> App<'a, 'b> {
     ///     .get_matches();
     /// ```
     /// [`env::args_os`]: https://doc.rust-lang.org/std/env/fn.args_os.html
-    pub fn get_matches(self) -> ArgMatches<'a> { self.get_matches_from(&mut env::args_os()) }
+    // pub fn get_matches(self) -> ArgMatches<'a> { self.get_matches_from(&mut env::args_os()) }
 
     /// Starts the parsing process. This method will return a [`clap::Result`] type instead of exiting
     /// the process on failed parse. By default this method gets matches from [`env::args_os`]
@@ -1475,10 +1474,10 @@ impl<'a, 'b> App<'a, 'b> {
     /// [`clap::Result`]: ./type.Result.html
     /// [`clap::Error`]: ./struct.Error.html
     /// [`kind`]: ./struct.Error.html
-    pub fn get_matches_safe(self) -> ClapResult<ArgMatches<'a>> {
-        // Start the parsing
-        self.get_matches_from_safe(&mut env::args_os())
-    }
+    // pub fn get_matches_safe(self) -> ClapResult<ArgMatches<'a>> {
+    //     // Start the parsing
+    //     self.get_matches_from_safe(&mut env::args_os())
+    // }
 
     /// Starts the parsing process. Like [`App::get_matches`] this method does not return a [`clap::Result`]
     /// and will automatically exit with an error message. This method, however, lets you specify

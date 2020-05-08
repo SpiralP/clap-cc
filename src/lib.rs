@@ -532,16 +532,10 @@
 #![cfg_attr(feature = "lints", allow(doc_markdown))]
 #![cfg_attr(feature = "lints", allow(explicit_iter_loop))]
 
-#[cfg(all(feature = "color", not(target_os = "windows")))]
-extern crate ansi_term;
-#[cfg(feature = "color")]
-extern crate atty;
 #[macro_use]
 extern crate bitflags;
 #[cfg(feature = "suggestions")]
 extern crate strsim;
-#[cfg(feature = "wrap_help")]
-extern crate term_size;
 extern crate textwrap;
 extern crate unicode_width;
 #[cfg(feature = "vec_map")]
