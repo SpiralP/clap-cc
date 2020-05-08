@@ -20,7 +20,13 @@ impl ANSIString {
 }
 impl fmt::Display for ANSIString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}{}", &self.color_code, &self.s)
+        write!(
+            f,
+            "{}{}{}",
+            &self.color_code,
+            &self.s,
+            classicube_helpers::color::WHITE
+        )
     }
 }
 
