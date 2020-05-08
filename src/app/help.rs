@@ -697,7 +697,7 @@ impl<'a> Help<'a> {
         if let Some(bn) = parser.meta.bin_name.as_ref() {
             if bn.contains(' ') {
                 // Incase we're dealing with subcommands i.e. git mv is translated to git-mv
-                color!(self, bn.replace(" ", "-"), good)?
+                color!(self, bn, good)?
             } else {
                 write_name!();
             }
