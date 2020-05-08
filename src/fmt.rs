@@ -1,13 +1,27 @@
 use std::fmt;
 
 struct ANSIString {
+    color_code: &'static str,
     s: String,
 }
 impl ANSIString {
-    pub fn from<S: Into<String>>(s: S) -> Self { Self { s: s.into() } }
+    pub fn new<S: Into<String>>(color_code: &'static str, s: S) -> Self {
+        Self {
+            color_code,
+            s: s.into(),
+        }
+    }
+
+    // white normal message
+    pub fn from<S: Into<String>>(s: S) -> Self {
+        //
+        Self::new(classicube_helpers::color::WHITE, s)
+    }
 }
 impl fmt::Display for ANSIString {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", &self.s) }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{}", &self.color_code, &self.s)
+    }
 }
 
 enum Color {
@@ -23,7 +37,7 @@ impl Color {
             Color::Yellow => classicube_helpers::color::YELLOW,
         };
 
-        ANSIString::from(format!("{}{}", color_code, s))
+        ANSIString::new(color_code, s)
     }
 }
 
@@ -127,25 +141,7 @@ impl<T: AsRef<str>> Format<T> {
     }
 }
 
-#[cfg(not(feature = "color"))]
-#[cfg_attr(feature = "lints", allow(match_same_arms))]
-impl<T: fmt::Display> Format<T> {
-    fn format(&self) -> &T {
-        match *self {
-            Format::Error(ref e) => e,
-            Format::Warning(ref e) => e,
-            Format::Good(ref e) => e,
-            Format::None(ref e) => e,
-        }
-    }
-}
-
 impl<T: AsRef<str>> fmt::Display for Format<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", &self.format()) }
-}
-
-#[cfg(not(feature = "color"))]
-impl<T: fmt::Display> fmt::Display for Format<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{}", &self.format()) }
 }
 
